@@ -12,8 +12,8 @@
     <header>
         <a href="index.php"><img src="/assests/logo.png" alt="Logo" id="logo"></a>
         <div id="links">
-            <a href="https://github.com/ksrisahithi/traffic-violation-database/blob/main/README.md" target="_blank" rel="noopener noreferrer" class="nav-btn">About</a>
-            <a href="https://github.com/ksrisahithi/traffic-violation-database" target="_blank" rel="noopener noreferrer" class="nav-btn">Source Code</a>
+            <a href="https://github.com/Nah-Ki/traffic-violation/blob/main/README.md" target="_blank" rel="noopener noreferrer" class="nav-btn">About</a>
+            <a href="https://github.com/Nah-Ki/traffic-violation" target="_blank" rel="noopener noreferrer" class="nav-btn">Source Code</a>
         </div>
     </header>
     <div id="content">
