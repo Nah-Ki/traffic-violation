@@ -1,16 +1,25 @@
 <?php
-    // database connection file
-    function open_conn(){
-        $servername = "localhost";
-        $username = "root"; // put your user name for the db server
-        $password = ""; // put your password
-        $db = "traffic_violation";
-  
-        $conn = new mysqli($servername, $username, $password, $db) or die("connection failed %s\n".$conn->error);
-        return $conn;
+// Database connection file
+function open_conn() {
+    $servername = "localhost";
+    $username = "root"; // MySQL username
+    $password = "mysql@123"; // MySQL password
+    $dbname = "traffic_violation"; // Database name
+
+    // Create connection
+    $conn = new mysqli($servername, $username, $password, $dbname);
+
+    // Check connection
+    if ($conn->connect_error) {
+        die("Connection failed: " . $conn->connect_error);
     }
-    
-    function close_conn($conn){
+
+    return $conn;
+}
+
+function close_conn($conn) {
+    if ($conn instanceof mysqli && $conn->ping()) { // Ensure the connection is valid
         $conn->close();
     }
+}
 ?>

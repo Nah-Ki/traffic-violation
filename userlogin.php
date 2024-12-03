@@ -46,34 +46,41 @@
     ob_end_clean();
 
     if(isset($_POST['submit'])){
-        $aadharno = aadhar($_POST['aadharno']);
-        $pwd = $_POST['pwd'];
+        $aadharno = aadhar($_POST['aadharno']); // Clean Aadhar number
+        $pwd = $_POST['pwd']; // User entered password
+
         if(!empty($aadharno) && !empty($pwd)){
             $conn = open_conn();
-            $sql = "SELECT * FROM user where aadhar_no = '$aadharno'";
+            $sql = "SELECT * FROM user WHERE aadhar_no = '$aadharno'";
             $result = $conn->query($sql);
+
             if($result->num_rows === 1){
                 session_start();
-                echo("the query worked<br>");
                 $row = $result->fetch_assoc();
-                echo($row['passwd']);
-                if($aadharno === $row['aadhar_no'] && $pwd===$row['passwd']){                    
+
+                // Debugging: print entered password and stored hash
+                echo "Entered password: " . $pwd . "<br>";
+                echo "Stored password hash: " . $row['passwd'] . "<br>";
+
+                // Compare entered password with the hashed password in the database
+                if(password_verify($pwd, $row['passwd'])){
                     $_SESSION['is_login'] = true;
                     $_SESSION['aadhar_no'] = $row['aadhar_no'];
                     $_SESSION['legal_name'] = $row['legal_name'];
                     header("Location: user.php");
                 }
                 else{
-                    echo("the user dont exist<br>");
-                    echo("register as a new user");
+                    echo "Incorrect password. Please try again.<br>";
+                    echo "Register as a new user if you don't have an account.";
                 }
             }
             else{
-                echo("the query dont work<br>");
+                echo "No user found with this Aadhar number.<br>";
+                echo "Register as a new user.";
             }
         }
         else{
-            echo("enter the fields");
+            echo "Please fill in all the fields.<br>";
         }
     }
 ?>

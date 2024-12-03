@@ -29,42 +29,56 @@
     </div>
     
     <?php
-        session_start();
-        ob_start();
-        include "connection.php";
-        ob_end_clean();
-        if(!isset($_SESSION['id'])){
-            header("Location: trflogin.php");
-            die();
-        }
-        if(isset($_POST['submit'])){
-            if(!empty($_POST['id'])){
-                $id = $_POST['id'];
-                $conn = open_conn();
-                $sql = "SELECT * FROM traffic_police WHERE id = $id";
-                $result = $conn->query($sql);
-                if($result->num_rows === 1){
-                    echo("<table>
+    session_start();
+    ob_start();
+    include "connection.php";
+    ob_end_clean();
+
+    // Redirect if session ID is not set
+    if (empty($_SESSION['id'])) {
+        header("Location: trflogin.php");
+        exit();
+    }
+
+    $message = ""; // Initialize message variable
+
+    if (isset($_POST['submit'])) {
+        if (!empty($_POST['id'])) {
+            $id = intval($_POST['id']); // Convert to integer for safety
+
+            $conn = open_conn();
+            $stmt = $conn->prepare("SELECT * FROM traffic_police WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 1) {
+                echo "<table border='1'>
                         <tr>
                             <th>ID</th>
                             <th>NAME</th>
                             <th>DESIGNATION</th>
                             <th>ZONE</th>
-                        </tr>
-                    ");
-                    while($row = $result->fetch_assoc()){
-                        echo("<tr>");
-                        echo("<td>".$row['id']."</td>");
-                        echo("<td>".$row['name']."</td>");
-                        echo("<td>".$row['designation']."</td>");
-                        echo("<td>".$row['zone_']."</td>");
-                    }
-                    $result->free();
-                } else {
-                    echo("<script>document.getElementById('message').innerHTML = 'No officer with ID ".$id."'</script>");
+                        </tr>";
+                while ($row = $result->fetch_assoc()) {
+                    echo "<tr>
+                            <td>" . htmlspecialchars($row['id']) . "</td>
+                            <td>" . htmlspecialchars($row['name']) . "</td>
+                            <td>" . htmlspecialchars($row['designation']) . "</td>
+                            <td>" . htmlspecialchars($row['zone_']) . "</td>
+                          </tr>";
                 }
+                echo "</table>";
+            } else {
+                $message = "No officer found with ID " . htmlspecialchars($id) . ".";
             }
+            $stmt->close();
+            $conn->close();
+        } else {
+            $message = "Please enter an officer ID.";
         }
-    ?>
+    }
+?>
+
 </body>
 </html>

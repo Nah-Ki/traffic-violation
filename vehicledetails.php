@@ -39,80 +39,63 @@
     ob_start();
     include "connection.php";
     ob_end_clean();
+
     if(isset($_POST['submit'])){
-        if(empty($_POST['state']) && empty($_POST['no']) && empty($_POST['somed']) && empty($_POST['no1']) && !is_int($_POST['no']) && !is_int($_POST['no1'])) {
-            echo("<script>alert('Enter the valid details')</script>");;
+        // Input validation
+        if(empty($_POST['state']) || empty($_POST['no']) || empty($_POST['somed']) || empty($_POST['no1']) || !is_numeric($_POST['no']) || !is_numeric($_POST['no1'])) {
+            echo("<script>alert('Please enter valid registration details. All fields are required, and 'no' and 'no1' should be numeric.')</script>");
         }
         else {
+            // Clean and process input data
             $state = strtolower($_POST['state']);
             $no = $_POST['no'];
             $somed = strtolower($_POST['somed']);
             $no1 = $_POST['no1'];
-            $regno = $state.$no.$somed.$no1;
+            $regno = $state . $no . $somed . $no1;
+
+            // Establish database connection
             $conn = open_conn();
-            $sql = "SELECT * FROM vehicle_details where reg_no = '$regno'";
-            $result = $conn->query($sql);
-            if($result -> num_rows > 0){
-                echo("<script>document.getElementById('veh-details').style.display = 'block';</script>");
-                $row = $result->fetch_assoc();
-                echo("<script>document.getElementById('vehno').innerText = '".$row['reg_no']."'</script>");
-                echo("<table id='details-table'>
-                        <tr>
-                            <td>Model: </td>
-                            <td>".$row['model']."</td>
-                        </tr>
-                        <tr>
-                            <td>Aadhar No. of owner: </td>
-                            <td>".$row['aadhar_no']."</td>
-                        </tr>
-                        <tr>
-                            <td>Registration date: </td>
-                            <td>".$row['reg_date']."</td>
-                        </tr>
-                        <tr>
-                            <td>Registration validity: </td>
-                            <td>".$row['regn_upto']."</td>
-                        </tr>
-                        <tr>
-                            <td>Vehicle class: </td>
-                            <td>".$row['vehicle_class']."</td>
-                        </tr>
-                        <tr>
-                            <td>Fuel type: </td>
-                            <td>".$row['fuel']."</td>
-                        </tr>
-                        <tr>
-                            <td>Chassis No: </td>
-                            <td>".$row['chassis_no']."</td>
-                        </tr>
-                        <tr>
-                            <td>Engine No: </td>
-                            <td>".$row['engine_no']."</td>
-                        </tr>
-                        <tr>
-                            <td>MV Tax validity: </td>
-                            <td>".$row['mv_tax_upto']."</td>
-                        </tr>
-                        <tr>
-                            <td>Insurance validity: </td>
-                            <td>".$row['insurance_upto']."</td>
-                        </tr>
-                        <tr>
-                            <td>PUCC validity: </td>
-                            <td>".$row['pucc_upto']."</td>
-                        </tr>
-                        <tr>
-                            <td>Emission norms: </td>
-                            <td>".$row['emission_norms']."</td>
-                        </tr>
-                        <tr>
-                            <td>RC Status: </td>
-                            <td>".$row['rc_status']."</td>
-                        </tr>");
+
+            // Use prepared statements to prevent SQL injection
+            $sql = "SELECT * FROM vehicle_details WHERE reg_no = ?";
+            if ($stmt = $conn->prepare($sql)) {
+                // Bind parameters and execute the query
+                $stmt->bind_param("s", $regno);
+                $stmt->execute();
+                $result = $stmt->get_result();
+
+                if($result->num_rows > 0) {
+                    // Show vehicle details
+                    $row = $result->fetch_assoc();
+                    echo("<script>document.getElementById('veh-details').style.display = 'block';</script>");
+                    echo("<script>document.getElementById('vehno').innerText = '".$row['reg_no']."'</script>");
+                    echo("<table id='details-table'>
+                            <tr><td>Model: </td><td>".$row['model']."</td></tr>
+                            <tr><td>Aadhar No. of owner: </td><td>".$row['aadhar_no']."</td></tr>
+                            <tr><td>Registration date: </td><td>".$row['reg_date']."</td></tr>
+                            <tr><td>Registration validity: </td><td>".$row['regn_upto']."</td></tr>
+                            <tr><td>Vehicle class: </td><td>".$row['vehicle_class']."</td></tr>
+                            <tr><td>Fuel type: </td><td>".$row['fuel']."</td></tr>
+                            <tr><td>Chassis No: </td><td>".$row['chassis_no']."</td></tr>
+                            <tr><td>Engine No: </td><td>".$row['engine_no']."</td></tr>
+                            <tr><td>MV Tax validity: </td><td>".$row['mv_tax_upto']."</td></tr>
+                            <tr><td>Insurance validity: </td><td>".$row['insurance_upto']."</td></tr>
+                            <tr><td>PUCC validity: </td><td>".$row['pucc_upto']."</td></tr>
+                            <tr><td>Emission norms: </td><td>".$row['emission_norms']."</td></tr>
+                            <tr><td>RC Status: </td><td>".$row['rc_status']."</td></tr>
+                        </table>");
+                } else {
+                    echo("<script>alert('Registration number not found')</script>");
+                }
+
+                // Close statement
+                $stmt->close();
+            } else {
+                echo("<script>alert('Database query failed')</script>");
             }
-            else {
-                echo("<script>alert('Registration number not found')</script>");
-            }
+
+            // Close the connection
+            $conn->close();
         }
     }
 ?>

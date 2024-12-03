@@ -49,35 +49,44 @@
 </html>
 
 <?php
+    session_start();
     ob_start();
     include "connection.php";
     ob_end_clean();
-    if(isset($_POST['submit'])){
-        $id = $_POST['id'];
-        $pwd = $_POST['pwd'];
-        if(!empty($id) && !empty($pwd)){
+
+    if (isset($_POST['submit'])) {
+        $id = intval($_POST['id']); // Ensure ID is an integer
+        $pwd = trim($_POST['pwd']); // Remove any leading or trailing spaces
+
+        if (!empty($id) && !empty($pwd)) {
             $conn = open_conn();
-            $sql = "SELECT * FROM traffic_police WHERE id = $id";
-            $result = $conn->query($sql);
-            if($result->num_rows === 1){
-                session_start();
+            $stmt = $conn->prepare("SELECT * FROM traffic_police WHERE id = ?");
+            $stmt->bind_param("i", $id);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows === 1) {
                 $row = $result->fetch_assoc();
-                if($id === $row['id'] && $pwd===$row['password']){
+            
+                // Temporarily compare plain text passwords for debugging
+                if ($pwd === $row['password']) {
                     $_SESSION['is_login'] = true;
-                    $_SESSION['id'] = $id;
+                    $_SESSION['id'] = $row['id'];
                     $_SESSION['name'] = $row['name'];
                     header("Location: trfperson.php");
+                    exit();
+                } else {
+                    echo "<script>alert('Wrong password');</script>";
                 }
-                else{
-                    echo("<script>alert('Wrong password')</script>");
-                }
+            } else {
+                echo "<script>alert('The user doesn\\'t exist.');</script>";
             }
-            else{
-                echo("<script>alert('The user doesn\'t exist.')</script>");
-            }
-        }
-        else if (!empty($id)){
-            echo("<script>alert('Enter the password')</script>");
+            
+
+            $stmt->close();
+            $conn->close();
+        } else {
+            echo "<script>alert('Please enter both ID and password.');</script>";
         }
     }
 ?>

@@ -41,11 +41,11 @@
     
     <div id="btn-container">
         <form action="rmpplwhoviolated.php" method="POST">
-            <input class="btn" type = "submit" name = "viewpay" value = "view people who paid the fine"/><br>
+            <input class="btn" type="submit" name="viewpay" value="view people who paid the fine"/><br>
             <small>*can only view the people who have paid the violation fine but not yet removed from the list.</small>
         </form>
         <div id="view-pay">
-            <h3>the people who are eligble to be removed from the violation list</h3>
+            <h3>the people who are eligible to be removed from the violation list</h3>
             <table id="vio-table">
                 <tr>
                     <th>Traffic Ticket No</th>
@@ -97,13 +97,12 @@
             if($result->num_rows > 0){
                 echo("<script>openForm('view-pay')</script>");
                 while($row = $result->fetch_assoc()){
-                    echo("<script>
-                        let row = document.getElementById('vio-table').insertRow(-1);
-                        row.insertCell(0).innerHTML = '".$row['traffic_tkt_no']."';
-                        row.insertCell(1).innerHTML = '".$row['legal_name']."';
-                        row.insertCell(2).innerHTML = '".$row['reg_no']."';
-                        row.insertCell(3).innerHTML = '".$row['violation_name']."';
-                    </script>");
+                    echo "<tr>";
+                    echo "<td>" . $row['traffic_tkt_no'] . "</td>";
+                    echo "<td>" . $row['legal_name'] . "</td>";
+                    echo "<td>" . $row['reg_no'] . "</td>";
+                    echo "<td>" . $row['violation_name'] . "</td>";
+                    echo "</tr>";
                 }
             }
             else{
@@ -119,7 +118,7 @@
             $conn = open_conn();
             $sql = "SELECT *
                     FROM ppl_who_violated
-                    WHERE traffic_tkt_no = $ticket_no
+                    WHERE traffic_tkt_no = '$ticket_no'
                     AND pay_status = 1";
             $result = $conn->query($sql);
             if($result->num_rows === 1){
@@ -139,16 +138,16 @@
                     FROM traffic_police
                     WHERE id = $id";
             $result = $conn->query($sql);
-            if($result->num_rows ===1){
+            if($result->num_rows === 1){
                 $row = $result->fetch_assoc();
                 if(password_verify($pwd, $row['password'])){
                     $sql = "DELETE
                             FROM ppl_who_violated
-                            WHERE traffic_tkt_no = $ticket_no
+                            WHERE traffic_tkt_no = '$ticket_no'
                             AND pay_status = 1 ";
                     $res = $conn->query($sql);
                     if($res){
-                        echo("<script>document.getElementById('delete-notice').innerHTML = 'the table has been updated.'</script>");
+                        echo("<script>document.getElementById('delete-notice').innerHTML = 'The table has been updated.'</script>");
                     }
                     else{
                         echo($conn->error);

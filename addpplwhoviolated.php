@@ -69,7 +69,7 @@
                 $traffic_tkt_no = $_POST['traffic_tkt_no'];
 
                 if(empty($_POST['state']) && empty($_POST['no']) && empty($_POST['somed']) && empty($_POST['no1']) && !is_int($_POST['no']) && !is_int($_POST['no1'])) {
-                    echo("<script>alert('enter the valid registration number')</script>");
+                    echo("<script>alert('Enter a valid registration number')</script>");
                 }
                 else {
                     $state = strtolower($_POST['state']);
@@ -87,57 +87,72 @@
                                     $traffic_polic_id = $_POST['traffic_polic_id'];
 
                                     if(!empty($_POST['due'])){
-                                        $due = $_POST['due'];
+                                        $due = $_POST['due'];  // The date is already in 'YYYY-MM-DD' format
 
                                         if(!empty($_POST['date_of_violation'])){
-                                            $date_of_violation = $_POST['date_of_violation'];
+                                            $date_of_violation = $_POST['date_of_violation'];  // The date is already in 'YYYY-MM-DD' format
 
-
+                                            // Establishing connection to the database
                                             $conn = open_conn();
-                                            $sql = "INSERT INTO ppl_who_violated VALUES($traffic_tkt_no, '$regno', $violation_id, $traffic_polic_id, '$due', '$date_of_violation',0)";
-                                            $result = $conn->query($sql);
-                                            if($result){
-                                                echo("<script>
-                                                    alert('you have added the person into the violations table!!');
-                                                    window.location.href = 'trfperson.php';
-                                                </script>");
+
+                                            // Prepare the SQL query with placeholders
+                                            $sql = "INSERT INTO ppl_who_violated (traffic_tkt_no, regno, violation_id, traffic_polic_id, due, date_of_violation) VALUES (?, ?, ?, ?, ?, ?)";
+
+                                            // Prepare the statement
+                                            if ($stmt = $conn->prepare($sql)) {
+                                                // Bind the parameters
+                                                $stmt->bind_param("isssss", $traffic_tkt_no, $regno, $violation_id, $traffic_polic_id, $due, $date_of_violation);
+
+                                                // Execute the query
+                                                if ($stmt->execute()) {
+                                                    echo("<script>
+                                                        alert('You have added the person into the violations table!');
+                                                        window.location.href = 'trfperson.php';
+                                                    </script>");
+                                                } else {
+                                                    echo("Error: " . $stmt->error);
+                                                }
+
+                                                // Close the statement
+                                                $stmt->close();
+                                            } else {
+                                                echo("Error preparing statement: " . $conn->error);
                                             }
-                                            else{
-                                                echo("error");
-                                                echo($conn->error);
-                                            }
+
+                                            // Close the connection
+                                            $conn->close();
                                         }
                                         else{
-                                            echo("<script>alert('dont leave the date of violation empty')</script>");
+                                            echo("<script>alert('Please do not leave the date of violation empty')</script>");
                                         }
                                     }
                                     else{
-                                        echo("<script>alert('dont leave the date field empty')</script>");
+                                        echo("<script>alert('Please do not leave the due field empty')</script>");
                                     }
                                 }
                                 else{
-                                    echo("<script>alert('enter the valid traffic police id')</script>");
+                                    echo("<script>alert('Please enter a valid traffic police ID')</script>");
                                 }
                             }
                             else{
-                                echo("<script>alert('dont leave the traffic id field empty')</script>");
+                                echo("<script>alert('Please do not leave the traffic police ID field empty')</script>");
                             }
                         }
                         else{
-                            echo("<script>alert('enter the valid violation id')</script>");
+                            echo("<script>alert('Please enter a valid violation ID')</script>");
                         }
                     }
                     else{
-                        echo("<script>alert('enter the valid violation id')</script>");
+                        echo("<script>alert('Please enter a valid violation ID')</script>");
                     }
                 }
             }
             else{
-                echo("<script>alert('invalid ticket number')</script>");
+                echo("<script>alert('Invalid ticket number')</script>");
             }         
         }
         else {
-            echo("<script>alert('enter a valid ticket number')</script>");
+            echo("<script>alert('Please enter a valid ticket number')</script>");
         }
     }
 ?>
